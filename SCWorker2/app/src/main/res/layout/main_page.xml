@@ -24,14 +24,14 @@
         android:layout_width="248dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="176dp"
+        android:onClick="openWebBrowser"
         android:rotationX="4"
         android:text="SIGN UP"
         app:backgroundTint="#1581F3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo"
-        android:onClick="openWebBrowser" />
+        app:layout_constraintTop_toBottomOf="@+id/logo" />
 
     <ImageView
         android:id="@+id/logo"
@@ -44,4 +44,5 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/__7_"
         tools:ignore="HardcodedText,VisualLintBounds" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
