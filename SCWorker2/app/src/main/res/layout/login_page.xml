@@ -9,9 +9,9 @@
 
     <ImageView
         android:id="@+id/logo1"
-        android:layout_width="439dp"
-        android:layout_height="331dp"
-        android:layout_marginTop="4dp"
+        android:layout_width="0dp"
+        android:layout_height="270dp"
+        android:adjustViewBounds="true"
         android:contentDescription="LOGO"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,30 +29,28 @@
         android:textColor="@color/blue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.725"
+        app:layout_constraintHorizontal_bias="0.729"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btLogin"
-        app:layout_constraintVertical_bias="0.165" />
+        app:layout_constraintVertical_bias="0.406" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/userName_inputLO"
+        android:id="@+id/phone_inputLO"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="248dp"
         android:layout_height="wrap_content"
-        android:hint="USERNAME"
+        android:hint="PHONE"
         android:textColorHint="@android:color/holo_blue_light"
-        app:helperText="Required*"
         app:counterEnabled="true"
         app:counterMaxLength="20"
-        app:errorEnabled="true"
-        app:errorIconDrawable="@drawable/error"
         app:endIconMode="clear_text"
+        app:helperText="Required*"
         app:helperTextTextColor="@android:color/holo_red_dark"
-        app:startIconDrawable="@drawable/user"
-        app:startIconTint="@android:color/holo_blue_light"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo1">
+        app:layout_constraintTop_toBottomOf="@+id/sp1"
+        app:startIconDrawable="@drawable/phone"
+        app:startIconTint="@android:color/holo_blue_light">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
@@ -69,15 +67,14 @@
         android:layout_height="wrap_content"
         android:hint="PASSWORD"
         android:textColorHint="@android:color/holo_blue_light"
-        app:helperText="Required*"
         app:counterEnabled="true"
         app:counterMaxLength="20"
         app:endIconMode="password_toggle"
+        app:helperText="Required*"
         app:helperTextTextColor="@android:color/holo_red_dark"
-        app:layout_constraintBottom_toTopOf="@+id/btLogin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/userName_inputLO"
+        app:layout_constraintTop_toBottomOf="@+id/sp2"
         app:startIconDrawable="@drawable/lock"
         app:startIconTint="@android:color/holo_blue_light">
 
@@ -85,12 +82,14 @@
             android:id="@+id/editTextTextPassword2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLength="20"
             android:inputType="textPassword"
+            android:maxLength="20"
             android:minHeight="48dp"
             android:singleLine="true"
             tools:ignore="SpeakableTextPresentCheck" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Guideline to provide space between layouts -->
 
     <Button
         android:id="@+id/btLogin"
@@ -101,33 +100,40 @@
         android:text="LOGIN"
         app:backgroundTint="#1581F3"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/password_inputLO" />
 
-    <!-- Guideline to provide space between layouts -->
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.35" />
+    <Button
+        android:id="@+id/btSignup"
+        android:layout_width="248dp"
+        android:layout_height="48dp"
+        android:rotationX="4"
+        android:text="SIGNUP"
+        app:backgroundTint="#1581F3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btLogin" />
+
 
     <Space
+        android:id="@+id/sp1"
         android:layout_width="0dp"
-        android:layout_height="16dp"
-        app:layout_constraintBottom_toTopOf="@id/userName_inputLO"
-        app:layout_constraintEnd_toEndOf="@id/guideline"
-        app:layout_constraintStart_toStartOf="@id/guideline"
+        android:layout_height="12dp"
+        app:layout_constraintBottom_toTopOf="@id/phone_inputLO"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/logo1" />
 
     <Space
+        android:id="@+id/sp2"
         android:layout_width="0dp"
-        android:layout_height="16dp"
+        android:layout_height="12dp"
         app:layout_constraintBottom_toTopOf="@id/password_inputLO"
-        app:layout_constraintEnd_toEndOf="@id/guideline"
-        app:layout_constraintStart_toStartOf="@id/guideline"
-        app:layout_constraintTop_toBottomOf="@id/userName_inputLO" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/phone_inputLO" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
