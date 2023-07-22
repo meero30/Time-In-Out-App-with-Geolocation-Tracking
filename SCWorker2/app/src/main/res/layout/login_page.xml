@@ -42,7 +42,7 @@
         android:hint="PHONE"
         android:textColorHint="@android:color/holo_blue_light"
         app:counterEnabled="true"
-        app:counterMaxLength="20"
+        app:counterMaxLength="11"
         app:endIconMode="clear_text"
         app:helperText="Required*"
         app:helperTextTextColor="@android:color/holo_red_dark"
@@ -53,6 +53,7 @@
         app:startIconTint="@android:color/holo_blue_light">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/phoneLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:maxLength="20"
@@ -78,8 +79,8 @@
         app:startIconDrawable="@drawable/lock"
         app:startIconTint="@android:color/holo_blue_light">
 
-        <EditText
-            android:id="@+id/editTextTextPassword2"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/passwordLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
@@ -105,7 +106,7 @@
         app:layout_constraintTop_toBottomOf="@+id/password_inputLO" />
 
     <Button
-        android:id="@+id/btSignup"
+        android:id="@+id/btSignupL"
         android:layout_width="248dp"
         android:layout_height="48dp"
         android:rotationX="4"
@@ -134,6 +135,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/phone_inputLO" />
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/password_inputLO"
+        app:layout_constraintBottom_toTopOf="@id/btLogin"
+        />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
