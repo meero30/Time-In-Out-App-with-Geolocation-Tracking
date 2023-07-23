@@ -3,19 +3,22 @@ package CPD2.scworker
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+
 import androidx.appcompat.app.AppCompatActivity
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.android.material.textfield.TextInputEditText
-import com.vishnusivadas.advanced_httpurlconnection.PutData
 
 
 class Signup : AppCompatActivity() {
+
 
 
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,58 +27,54 @@ class Signup : AppCompatActivity() {
 
             val fullNameInput: TextInputEditText  = findViewById(R.id.fullname)
             val emailInput: TextInputEditText  = findViewById(R.id.email)
-            val phoneInput: TextInputEditText  = findViewById(R.id.phoneSignup)
-            val passwordInput: TextInputEditText  = findViewById(R.id.passwordSignup)
+            val phoneInput: TextInputEditText  = findViewById(R.id.phone)
+            val passwordInput: TextInputEditText  = findViewById(R.id.password)
             val signupButton: Button = findViewById(R.id.btSignup)
+            val texterror : TextView = findViewById(R.id.error)
             val progress: ProgressBar = findViewById(R.id.progress)
+            texterror.visibility = View.GONE
 
             signupButton.setOnClickListener(
                 View.OnClickListener {
+                    texterror.visibility = View.GONE
+                    progress.visibility = View.VISIBLE
                     val fullname: String = fullNameInput.text.toString()
                     val email: String = emailInput.text.toString()
                     val phone: String = phoneInput.text.toString()
                     val password: String = passwordInput.text.toString()
+                    val queue = Volley.newRequestQueue(applicationContext)
+                    val url = "http://192.168.100.13/login/signup.php"
 
-                    if(fullname != "" && email != "" && phone != "" && password != "") {
-                        progress.visibility = View.VISIBLE
-                        val handler = Handler(Looper.getMainLooper())
-                        handler.post(Runnable {
-                            val field = arrayOfNulls<String>(4)
-                            field[0] = "fullname"
-                            field[1] = "email"
-                            field[2] = "phone"
-                            field[3] = "password"
-                            val data = arrayOfNulls<String>(4)
-                            data[0] = fullname
-                            data[1] = email
-                            data[2] = phone
-                            data[3] = password
-                            val putData = PutData(
-                                "http://192.168.100.13/SCworkerLogin/signup.php",
-                                "POST",
-                                field,
-                                data
-                            )
-                            if (putData.startPut()) {
-                                if (putData.onComplete()) {
-                                    progress.visibility = View.GONE
-                                    val result = putData.result
-                                    if(result.equals("Sign Up Success")){
-                                        Toast.makeText(applicationContext, result, Toast.LENGTH_SHORT).show()
-                                        val intent = Intent(this@Signup,Login::class.java)
-                                        startActivity(intent)
-                                        finish()
-                                    }else{
-                                        Toast.makeText(applicationContext, result, Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
+                    val stringRequest: StringRequest =
+                        object : StringRequest(
+                            Request.Method.POST, url,
+                            Response.Listener<String> { response ->
+                                progress.visibility = View.GONE
+                                if(response.equals("success")){
+                                    Toast.makeText(applicationContext,"Sign up successful",Toast.LENGTH_SHORT).show()
+                                    val intent = Intent(this@Signup,Login::class.java)
+                                    startActivity(intent)
+                                    finish();
+                                }else {
+                                    texterror.text = response;
+                                    texterror.visibility = View.VISIBLE
                                 }
+                                                      },
+                            Response.ErrorListener {error->
+                                progress.visibility = View.GONE
+                                texterror.text = "Error: ${error.message}"
+                                texterror.visibility = View.VISIBLE
+                            }) {
+                            override fun getParams(): Map<String, String>? {
+                                val paramV: MutableMap<String, String> = HashMap()
+                                paramV["fullname"] = fullname
+                                paramV["email"] = email
+                                paramV["phone"] = phone
+                                paramV["password"] = password
+                                return paramV
                             }
-                        )
-                    }
-                    else{
-                        Toast.makeText(applicationContext, "All fields are required", Toast.LENGTH_SHORT).show()
-                    }
+                        }
+                    queue.add(stringRequest)
                 }
             )
 
