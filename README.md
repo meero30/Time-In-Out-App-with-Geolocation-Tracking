@@ -2,3 +2,6 @@
  This will be the repository for the worker end of our program
  Kindly find the IP address in the code, and change that IP to your own IP,
  I've pretty sure all of yall knows how to get your own IP :)
+
+Also put the login folder that contains the php files under your xampp/htdocs, 
+so that it can run on your localhost
