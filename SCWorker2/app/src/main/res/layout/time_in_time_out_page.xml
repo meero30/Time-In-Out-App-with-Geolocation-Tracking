@@ -13,12 +13,14 @@
         android:layout_marginLeft="92dp"
         android:layout_marginTop="360dp"
         android:text="Time Out"
+        android:alpha="0.5"
         app:backgroundTint="#E91E63"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+        app:layout_constraintTop_toBottomOf="@+id/logo2"
+        />
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/logo2"
         android:layout_width="278dp"
         android:layout_height="201dp"
         android:layout_marginTop="4dp"
@@ -36,9 +38,10 @@
         android:layout_marginLeft="92dp"
         android:layout_marginTop="284dp"
         android:text="Time In"
+        android:alpha="0.5"
         app:backgroundTint="#2196F3"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+        app:layout_constraintTop_toBottomOf="@+id/logo2" />
 
     <TextView
         android:id="@+id/tvLabel"
@@ -110,5 +113,38 @@
         android:text="TextView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tvGeofenceResults"
+        android:layout_width="123dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="96dp"
+        android:layout_marginLeft="96dp"
+        android:layout_marginBottom="92dp"
+        android:text="Results"
+        app:layout_constraintBottom_toTopOf="@+id/btTimeIn"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btUpdateResults"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="148dp"
+        android:layout_marginEnd="64dp"
+        android:layout_marginRight="64dp"
+        android:text="Update"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logo2" />
+
+    <Button
+        android:id="@+id/btResetTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="96dp"
+        android:layout_marginLeft="96dp"
+        android:layout_marginTop="24dp"
+        android:text="Reset"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvGeofenceResults" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
