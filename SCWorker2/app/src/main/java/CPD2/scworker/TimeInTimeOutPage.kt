@@ -20,12 +20,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Geofence
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
 import com.instacart.library.truetime.TrueTimeRx
 import io.reactivex.Single
 import io.reactivex.disposables.Disposable
@@ -35,7 +30,7 @@ import java.util.Date
 import java.util.Locale
 import android.os.Handler
 import android.os.Looper
-import android.view.View
+import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 
@@ -53,17 +48,18 @@ var radius : Double = 1000.0 // In meters
 
 class TimeInTimeOutPage : AppCompatActivity() {
 
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+//    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var tvLatitude: TextView
     private lateinit var tvLongitude: TextView
     private lateinit var etLatitude : EditText
     private lateinit var etLongitude : EditText
     private lateinit var geofenceList : MutableList<Geofence>
     private lateinit var tvGeofenceResults : TextView
-    private lateinit var locationCallback: LocationCallback
+//    private lateinit var locationCallback: LocationCallback
     private lateinit var timeInButton: Button
     private lateinit var timeOutButton: Button
     private var disposable: Disposable? = null
+    private val prefsName = "MyPrefs"
 
     private val geofenceReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -85,7 +81,7 @@ class TimeInTimeOutPage : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.time_in_time_out_page)
 
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+//        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Geofence Notifications"
@@ -112,31 +108,35 @@ class TimeInTimeOutPage : AppCompatActivity() {
         }
 
         val resetTimeButtons : Button = findViewById(R.id.btResetTimer)
-//        resetTimeButtons.setOnClickListener{
-//            timeInButton.isClickable = true
-//            timeInButton.alpha = 1.0f
-//            timeOutButton.isClickable = false
-//            timeOutButton.alpha = 0.5f
-//        }
+        resetTimeButtons.setOnClickListener{
+            timeInButton.isClickable = true
+            timeInButton.alpha = 1.0f
+            timeOutButton.isClickable = false
+            timeOutButton.alpha = 0.5f
+        }
+
 
 
 
         timeInButton  = findViewById(R.id.btTimeIn)
         timeInButton.setOnClickListener {
             // Check if location is within geofence
-            getCurrentLocation()
+            startLocationUpdateServiceWrapper()
             Handler(Looper.getMainLooper()).postDelayed({
                 // This block of code will be executed after 7.5 seconds
                 if (isInsideGeoFence(assignedLatitude, assignedLongitude, currentLatitude, currentLongitude, radius)) {
                     // if within geofence, get time and date and proceed to send data to php server
-                    startLocationService()
+                    startLocationTrackingService()
                     var date =  getCurrentTimeAndDate()
                     // send data
+
                     Toast.makeText(this, "Timed-In Successfully", Toast.LENGTH_SHORT).show()
-                    handleTimeIn()
+                    buttonLogicHandleTimeIn()
+                    getSharedPreferences(prefsName, MODE_PRIVATE).edit().putBoolean("timeInClicked", true).apply()
+
                 } else {
                     // if not within geofence, send a pop up that warns the user that they need to be withing the geofence
-                    stopLocationUpdates()
+                    stopLocationUpdateService()
                     Toast.makeText(this, "Time-In Failure", Toast.LENGTH_SHORT).show()
 
                 }
@@ -149,8 +149,8 @@ class TimeInTimeOutPage : AppCompatActivity() {
         timeOutButton.setOnClickListener {
             // calling stop location updates first because locationCallback Global var will be replaced with a new instantiation.
             // This fixes the bug that location keeps updating due to it being replaced before being stopped. I'm assuming each instantiation has different ID's
-            stopLocationUpdates()
-            getCurrentLocation()  // sets up permissions, location updates, and edits global variables for the user lat an lng
+            stopLocationUpdateService()
+            startLocationUpdateServiceWrapper()  // sets up permissions, location updates, and edits global variables for the user lat an lng
             Handler(Looper.getMainLooper()).postDelayed({
                 // This block of code will be executed after 7.5 seconds
 
@@ -160,35 +160,41 @@ class TimeInTimeOutPage : AppCompatActivity() {
                     var date =  getCurrentTimeAndDate()
                     // send data
 
-                    stopLocationService()
-                    stopLocationUpdates()
+                    stopLocationTrackingService()
+                    stopLocationUpdateService()
                     Toast.makeText(this, "Timed-Out Successfully", Toast.LENGTH_SHORT).show()
-                    handleTimeOut()
+                    buttonLogicHandleTimeOut()
+                    getSharedPreferences(prefsName, MODE_PRIVATE).edit().putBoolean("timeInClicked", false).apply()
+
 
                 } else {
                     // if not within geofence, send a pop up that warns the user that they need to be withing the geofence
-                    stopLocationUpdates()
+                    stopLocationUpdateService()
                     Toast.makeText(this, "Time-Out Failure", Toast.LENGTH_SHORT).show()
                 }
             }, 7500)
 
         }
 
-        // Set initial state
-        val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val isTimeInEnabled = sharedPreferences.getBoolean("isTimeInEnabled", true)
+        // Restore button states from SharedPreferences. This needs to be called after the buttons are initialized
+        restoreButtonStates()
 
-        if (isTimeInEnabled) {
-            timeInButton.isClickable = true
-            timeInButton.alpha = 1.0f
-            timeOutButton.isClickable = false
-            timeOutButton.alpha = 0.5f
-        } else {
-            timeInButton.isClickable = false
-            timeInButton.alpha = 0.5f
-            timeOutButton.isClickable = true
-            timeOutButton.alpha = 1.0f
-        }
+
+        // Set initial state
+//        val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+//        val isTimeInEnabled = sharedPreferences.getBoolean("isTimeInEnabled", true)
+//
+//        if (isTimeInEnabled) {
+//            timeInButton.isClickable = true
+//            timeInButton.alpha = 1.0f
+//            timeOutButton.isClickable = false
+//            timeOutButton.alpha = 0.5f
+//        } else {
+//            timeInButton.isClickable = false
+//            timeInButton.alpha = 0.5f
+//            timeOutButton.isClickable = true
+//            timeOutButton.alpha = 1.0f
+//        }
 
         
         // Get GeoFence coordinates lat,long
@@ -203,8 +209,47 @@ class TimeInTimeOutPage : AppCompatActivity() {
 
     }
 
+    private fun restoreButtonStates() {
+        // Default is false, meaning it's the user's first time using the app
+        val timeInClicked = getSharedPreferences(prefsName, MODE_PRIVATE).getBoolean("timeInClicked", false)
+
+        if (timeInClicked) {
+            timeInButton.isClickable = false
+            timeOutButton.isClickable = true
+            timeInButton.alpha = 0.5f  // Make it transparent
+            timeOutButton.alpha = 1.0f  // Make it opaque
+        } else {
+            timeInButton.isClickable = true
+            timeOutButton.isClickable = false
+            timeInButton.alpha = 1.0f  // Make it opaque
+            timeOutButton.alpha = 0.5f  // Make it transparent
+        }
+    }
+
+    private fun updateButtonStates() {
+        timeInButton.isClickable = !timeInButton.isClickable
+        timeOutButton.isClickable = !timeOutButton.isClickable
+    }
+
+    private fun stopLocationUpdateService() {
+        val intent = Intent(this, LocationUpdateService::class.java)
+        stopService(intent)
+    }
+
     private fun popUpWarning() {
 
+    }
+
+    private fun sendGeofenceAlert(message : String, onGoingValue : Boolean, idNum : Int) {
+        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle("Geofence Alert")
+            .setContentText(message)
+            .setSmallIcon(R.drawable.ic_launcher_foreground) // Your app icon
+            .setOngoing(onGoingValue)
+            .build()
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(idNum, notification) // 2 is the notification id for this particular notification
     }
 
     private fun getCurrentTimeAndDate(): Single<String> {
@@ -234,7 +279,7 @@ class TimeInTimeOutPage : AppCompatActivity() {
         disposable?.dispose()
     }
 
-    fun handleTimeIn() {
+    fun buttonLogicHandleTimeIn() {
         timeInButton.isClickable = false
         timeInButton.alpha = 0.5f
 
@@ -244,7 +289,7 @@ class TimeInTimeOutPage : AppCompatActivity() {
         saveButtonState(false)  // Saving that the Time In button is not enabled
     }
 
-    fun handleTimeOut() {
+    fun buttonLogicHandleTimeOut() {
         timeOutButton.isClickable = false
         timeOutButton.alpha = 0.5f
 
@@ -262,7 +307,7 @@ class TimeInTimeOutPage : AppCompatActivity() {
     }
 
 
-    private fun getCurrentLocation() {
+    private fun startLocationUpdateServiceWrapper() {
         // Check if permissions are enabled
         if (checkPermissions()) {
 
@@ -282,35 +327,7 @@ class TimeInTimeOutPage : AppCompatActivity() {
                 }
 
                 // This is where to put the geolocation functions
-                val locationRequest = LocationRequest.create()
-                locationRequest.setInterval(10000)
-                locationRequest.setFastestInterval(5000)
-                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-
-
-                locationCallback = object : LocationCallback() {
-                    override fun onLocationResult(locationResult: LocationResult) {
-                        for (location in locationResult.locations) {
-                            if (location != null) {
-
-                                // Such as:
-//                                Toast.makeText(this@TimeInTimeOutPage, "Location Successfully Retrieved", Toast.LENGTH_SHORT).show()
-                                tvLatitude.text = "" + location.latitude
-                                tvLongitude.text = "" + location.longitude
-
-                                currentLatitude = location.latitude
-                                currentLongitude = location.longitude
-
-                            }
-                            else {
-                                Toast.makeText(this@TimeInTimeOutPage, "location is Null", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                }
-
-                fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback, null)
-
+                startLocationUpdateService()
 
             } else {
                 // Open settings here to enable location
@@ -325,11 +342,11 @@ class TimeInTimeOutPage : AppCompatActivity() {
         }
     }
 
-    private fun stopLocationUpdates() {
-        if (::locationCallback.isInitialized) {
-            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-        }
-    }
+//    private fun stopLocationUpdates() {
+//        if (::locationCallback.isInitialized) {
+//            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+//        }
+//    }
 
     private fun requestPermission() {
 
@@ -343,13 +360,22 @@ class TimeInTimeOutPage : AppCompatActivity() {
 
     }
 
+    private fun startLocationUpdateService() {
+        val serviceIntent = Intent(this, LocationUpdateService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.startForegroundService(serviceIntent)
+        } else {
+            this.startService(serviceIntent)
+        }
+    }
 
-    private fun startLocationService() {
+
+    private fun startLocationTrackingService() {
         val intent = Intent(this, LocationTrackingService::class.java)
         startService(intent)
     }
 
-    private fun stopLocationService() {
+    private fun stopLocationTrackingService() {
         val intent = Intent(this, LocationTrackingService::class.java)
         stopService(intent)
     }
@@ -394,7 +420,7 @@ class TimeInTimeOutPage : AppCompatActivity() {
         if (requestCode == PERMISSION_REQUEST_ACCESS_LOCATION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(applicationContext, "Granted", Toast.LENGTH_SHORT).show()
-                getCurrentLocation()   // loop again to the function
+                startLocationUpdateServiceWrapper()   // loop again to the function
             } else {
                 Toast.makeText(applicationContext, "Denied", Toast.LENGTH_SHORT).show()
             }
@@ -404,16 +430,23 @@ class TimeInTimeOutPage : AppCompatActivity() {
 
     // TODO: Make the app monitor geofencing, if user disables permissions or location, automatic time out will execute.
     private fun autoTimeOut() {
-        getCurrentLocation()
+        startLocationUpdateServiceWrapper()
         Handler(Looper.getMainLooper()).postDelayed({
             // This block of code will be executed after 7.5 seconds
 
             var date =  getCurrentTimeAndDate()
             // send data
-            stopLocationService()
-            stopLocationUpdates()
+            stopLocationTrackingService()
+            stopLocationUpdateService()
             Toast.makeText(this, "Auto Timed Out", Toast.LENGTH_SHORT).show()
-            handleTimeOut()
+
+//            buttonLogicHandleTimeOut()
+
+            // sets the timeInClicked to false (in order to time out)
+            getSharedPreferences(prefsName, MODE_PRIVATE).edit().putBoolean("timeInClicked", false).apply()
+            sendGeofenceAlert("Auto Timed Out success", false, 4)
+//            restoreButtonStates()
+
         }, 7500)
 
     }
@@ -440,16 +473,23 @@ class TimeInTimeOutPage : AppCompatActivity() {
         }
     }
 
+
+    override fun onStart() {
+        super.onStart()
+        restoreButtonStates()
+    }
+
     override fun onResume() {
         super.onResume()
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(geofenceReceiver, IntentFilter(LocationTrackingService.ACTION_USER_OUTSIDE_GEOFENCE))
+
+        restoreButtonStates()
     }
 
     override fun onPause() {
         super.onPause()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(geofenceReceiver)
     }
-
 
 }

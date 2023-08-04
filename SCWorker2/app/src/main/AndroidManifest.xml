@@ -30,6 +30,12 @@
             android:enabled="true"
             android:exported="false" />
 
+        <service android:name=".LocationUpdateService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location"/>
+
+
 
         <activity android:name=".MainPage"
             android:exported="true">
