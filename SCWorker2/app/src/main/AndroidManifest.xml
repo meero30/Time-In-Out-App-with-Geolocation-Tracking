@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
     <application
@@ -14,6 +21,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SCWorker"
         tools:ignore="GoogleAppIndexingWarning">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyByhTFKCbQDyr70bx5lRkwANck7E-WfHro" />
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false"/>
@@ -27,7 +37,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".Signup"/>
-        <activity android:name=".Nextpage"/>
+        <activity android:name=".TimeInPage"/>
+        <activity android:name=".forgotPass_Verify"/>
+        <activity android:name=".forgotPass_Reset"/>
     </application>
 
 </manifest>
