@@ -1,10 +1,11 @@
 package CPD2.scworker
 
-import CPD2.scworker.TimeInTimeOutPage.Companion.NOTIFICATION_CHANNEL_ID
+import CPD2.scworker.TimeInPage.Companion.NOTIFICATION_CHANNEL_ID
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.location.Location
 import android.os.CountDownTimer
 import android.os.IBinder
@@ -52,17 +53,27 @@ class LocationTrackingService : Service() {
         return null
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForegroundServiceWithNotification()
-        sendGeofenceAlert("Starting Foreground Service", false, 4)
-        // Start timer task to check geofence status
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                checkGeofenceStatus()
-            }
-        }, 0, 10000) // Check every 10 seconds
 
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent != null) {
+            val serviceType = intent.getStringExtra("serviceType")
+            if (serviceType == "location") {
+                // Handle the location tracking service
+                startForegroundServiceWithNotification()
+                sendGeofenceAlert("Starting Foreground Service", false, 4)
+                // Start timer task to check geofence status
+
+
+                timer.scheduleAtFixedRate(object : TimerTask() {
+                    override fun run() {
+                        checkGeofenceStatus()
+                    }
+                }, 0, 10000) // Check every 10 seconds
+            }
+        }
         return START_STICKY
+
     }
 
     private fun startForegroundServiceWithNotification() {
@@ -81,7 +92,7 @@ class LocationTrackingService : Service() {
             if (!isOutsideGeofence) {
                 isOutsideGeofence = true
                 startOutsideGeofenceTimer()
-                // Send another notification or updv ate the current one
+                // Send another notification or update the current one
             }
         } else {
             isOutsideGeofence = false
@@ -151,9 +162,16 @@ class LocationTrackingService : Service() {
         const val ACTION_USER_OUTSIDE_GEOFENCE = "com.CPD2.scworker.ACTION_USER_OUTSIDE_GEOFENCE"
     }
 
+//    private fun callExternalFunction() {
+//        val intent = Intent(ACTION_USER_OUTSIDE_GEOFENCE)
+//        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+//    }
+
     private fun callExternalFunction() {
-        val intent = Intent(ACTION_USER_OUTSIDE_GEOFENCE)
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        val intent = Intent(this, GeofenceJobIntentService::class.java)
+        intent.action = ACTION_USER_OUTSIDE_GEOFENCE
+        GeofenceJobIntentService.enqueueWork(this, intent)
     }
+
 
 }

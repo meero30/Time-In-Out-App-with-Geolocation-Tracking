@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SCWorker</string>
+    <string name="fullname">FULLNAME</string>
 </resources>

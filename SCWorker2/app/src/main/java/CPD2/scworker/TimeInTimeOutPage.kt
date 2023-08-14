@@ -30,19 +30,20 @@ import java.util.Date
 import java.util.Locale
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 
 //const val  GEOFENCE_RADIUS_IN_METERS: Float = 100.0F
 //const val  GEOFENCE_EXPIRATION_IN_MILLISECONDS: Float = 8 * 60 * 60 * 1000F // 8 hours in milliseconds
-var currentLatitude : Double = 0.0
-var currentLongitude : Double = 0.0
-
-// Washington National Cathedral 38.8951 and longitude -77.0364
-var assignedLatitude : Double =  38.9072
-var assignedLongitude : Double = -77.0369
-var radius : Double = 1000.0 // In meters
+//var currentLatitude : Double = 0.0
+//var currentLongitude : Double = 0.0
+//
+//// Washington National Cathedral 38.8951 and longitude -77.0364
+//var assignedLatitude : Double =  38.9072
+//var assignedLongitude : Double = -77.0369
+//var radius : Double = 1000.0 // In meters
 
 
 
@@ -59,7 +60,7 @@ class TimeInTimeOutPage : AppCompatActivity() {
     private lateinit var timeInButton: Button
     private lateinit var timeOutButton: Button
     private var disposable: Disposable? = null
-    private val prefsName = "MyPrefs"
+    private val prefsName = "MyPreferences"
 
     private val geofenceReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -96,6 +97,7 @@ class TimeInTimeOutPage : AppCompatActivity() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+
 
         val imageView: ImageView = findViewById(R.id.logo2)
         imageView.setOnClickListener {
@@ -458,11 +460,14 @@ class TimeInTimeOutPage : AppCompatActivity() {
         Location.distanceBetween(assignedLatitude, assignedLongitude, currentLatitude, currentLongitude, distanceInMeters)
         var placeholder : String = ""
 
+        Log.d("DistanceDebug", "Distance: $distanceInMeters meters")
+
         if (distanceInMeters[0].toDouble() < radius) {
             // User is inside the Geo-fence
 //            showNotificationEvent.call()
             placeholder = "User is inside Geofence " + distanceInMeters[0].toString()
             tvGeofenceResults.text = placeholder
+
             return true
 
         } else {
